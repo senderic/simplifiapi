@@ -2,7 +2,7 @@ import csv
 import json
 import logging
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import configargparse
 
@@ -14,64 +14,72 @@ JSON_FORMAT = "json"
 CSV_FORMAT = "csv"
 
 
-def parse_arguments(args: List[str]) -> configargparse.Namespace:
+def parse_arguments(args: list[str]) -> configargparse.Namespace:
     parser = configargparse.ArgumentParser()
 
     # Credential
-    parser.add_argument('--email',
-                        nargs="?",
-                        default=None,
-                        help="The e-mail address for your Quicken Simplifi account")
-    parser.add_argument('--password',
-                        nargs="?",
-                        default=None,
-                        help="The password for your Quicken Simplifi account")
-    parser.add_argument('--token',
-                        nargs="?",
-                        default=None,
-                        help="Use existing token to bypass MFA check")
+    parser.add_argument(
+        "--email",
+        nargs="?",
+        default=None,
+        help="The e-mail address for your Quicken Simplifi account",
+    )
+    parser.add_argument(
+        "--password",
+        nargs="?",
+        default=None,
+        help="The password for your Quicken Simplifi account",
+    )
+    parser.add_argument(
+        "--token",
+        nargs="?",
+        default=None,
+        help="Use existing token to bypass MFA check",
+    )
 
     # Datasets
-    parser.add_argument('--accounts',
-                        action="store_true",
-                        default=False,
-                        help="Retrieve accounts")
-    parser.add_argument('--transactions',
-                        action="store_true",
-                        default=False,
-                        help="Retrieve transactions")
-    parser.add_argument('--tags',
-                        action="store_true",
-                        default=False,
-                        help="Retrieve tags")
-    parser.add_argument('--categories',
-                        action="store_true",
-                        default=False,
-                        help="Retrieve categories")
+    parser.add_argument(
+        "--accounts", action="store_true", default=False, help="Retrieve accounts"
+    )
+    parser.add_argument(
+        "--transactions",
+        action="store_true",
+        default=False,
+        help="Retrieve transactions",
+    )
+    parser.add_argument(
+        "--tags", action="store_true", default=False, help="Retrieve tags"
+    )
+    parser.add_argument(
+        "--categories", action="store_true", default=False, help="Retrieve categories"
+    )
 
     # Export
-    parser.add_argument('--filename',
-                        default="output",
-                        help="Write results to file this prefix")
-    parser.add_argument('--format',
-                        choices=[JSON_FORMAT, CSV_FORMAT],
-                        default=JSON_FORMAT,
-                        help="The format used to return data.")
+    parser.add_argument(
+        "--filename", default="output", help="Write results to file this prefix"
+    )
+    parser.add_argument(
+        "--format",
+        choices=[JSON_FORMAT, CSV_FORMAT],
+        default=JSON_FORMAT,
+        help="The format used to return data.",
+    )
 
     return parser.parse_args(args)
 
 
-def write_data(options: configargparse.Namespace, data: List[Dict[str, Any]], name: str) -> None:
-    filename = "{}_{}.{}".format(options.filename, name, options.format)
-    logger.warning("Saving {} to {}".format(name, filename))
+def write_data(
+    options: configargparse.Namespace, data: list[dict[str, Any]], name: str
+) -> None:
+    filename = f"{options.filename}_{name}.{options.format}"
+    logger.warning(f"Saving {name} to {filename}")
     if options.format == CSV_FORMAT:
         if not data:
-            logger.warning("No data to write for {}".format(name))
+            logger.warning(f"No data to write for {name}")
             return
-        fieldnames = list(dict.fromkeys(
-            key for row in data if isinstance(row, dict)
-            for key in row
-        ))
+        fieldnames = list(
+            dict.fromkeys(key for row in data if isinstance(row, dict) for key in row)
+        )
         with open(filename, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
             writer.writeheader()
@@ -91,15 +99,14 @@ def main() -> None:
 
     client = Client()
 
-    token: Optional[str] = options.token
-    if (not token):
-        token = client.get_token(
-            email=options.email, password=options.password)
+    token: str | None = options.token
+    if not token:
+        token = client.get_token(email=options.email, password=options.password)
         if not token:
             logger.error("Unable to retrieve token.")
             return
 
-    if (client.verify_token(token) == False):
+    if not client.verify_token(token):
         logger.error("Unable to log in simplifi.")
         return
 
@@ -111,18 +118,18 @@ def main() -> None:
         return
     datasetId = datasets[0]["id"]
 
-    if (options.accounts):
+    if options.accounts:
         accounts = client.get_accounts(datasetId)
         write_data(options, accounts, "accounts")
 
-    if (options.transactions):
+    if options.transactions:
         transactions = client.get_transactions(datasetId)
         write_data(options, transactions, "transactions")
 
-    if (options.tags):
+    if options.tags:
         tags = client.get_tags(datasetId)
         write_data(options, tags, "tags")
 
-    if (options.categories):
+    if options.categories:
         categories = client.get_categories(datasetId)
         write_data(options, categories, "categories")

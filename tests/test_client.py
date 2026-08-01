@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 import responses
 
-from simplifiapi.client import Client, SIMPLIFI_ENDPOINT
+from simplifiapi.client import Client
 
 
 class TestClientInit:

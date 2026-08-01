@@ -2,10 +2,9 @@ import csv
 import json
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from simplifiapi.cli import main, parse_arguments, write_data
-from simplifiapi.client import Client
 
 
 class TestParseArguments:
@@ -149,7 +148,10 @@ class TestMain:
             instance.get_accounts.assert_not_called()
 
     def test_main_retrieves_accounts(self):
-        with patch("simplifiapi.cli.Client") as MockClient, patch("simplifiapi.cli.write_data") as mock_write:
+        with (
+            patch("simplifiapi.cli.Client") as MockClient,
+            patch("simplifiapi.cli.write_data") as mock_write,
+        ):
             instance = MockClient.return_value
             instance.get_token.return_value = "fake-token"
             instance.verify_token.return_value = True
@@ -161,13 +163,25 @@ class TestMain:
             mock_write.assert_called_once()
 
     def test_main_with_existing_token(self):
-        with patch("simplifiapi.cli.Client") as MockClient, patch("simplifiapi.cli.write_data") as mock_write:
+        with (
+            patch("simplifiapi.cli.Client") as MockClient,
+            patch("simplifiapi.cli.write_data") as mock_write,
+        ):
             instance = MockClient.return_value
             instance.verify_token.return_value = True
             instance.get_datasets.return_value = [{"id": "ds1"}]
             instance.get_accounts.return_value = []
             instance.get_transactions.return_value = []
-            with patch("sys.argv", ["simplifiapi", "--token", "existing-tok", "--accounts", "--transactions"]):
+            with patch(
+                "sys.argv",
+                [
+                    "simplifiapi",
+                    "--token",
+                    "existing-tok",
+                    "--accounts",
+                    "--transactions",
+                ],
+            ):
                 main()
             instance.get_token.assert_not_called()
             instance.get_accounts.assert_called_once_with("ds1")
@@ -175,7 +189,10 @@ class TestMain:
             assert mock_write.call_count == 2
 
     def test_main_retrieves_all_types(self):
-        with patch("simplifiapi.cli.Client") as MockClient, patch("simplifiapi.cli.write_data") as mock_write:
+        with (
+            patch("simplifiapi.cli.Client") as MockClient,
+            patch("simplifiapi.cli.write_data") as mock_write,
+        ):
             instance = MockClient.return_value
             instance.get_token.return_value = "fake-token"
             instance.verify_token.return_value = True
@@ -184,7 +201,16 @@ class TestMain:
             instance.get_transactions.return_value = []
             instance.get_tags.return_value = []
             instance.get_categories.return_value = []
-            with patch("sys.argv", ["simplifiapi", "--accounts", "--transactions", "--tags", "--categories"]):
+            with patch(
+                "sys.argv",
+                [
+                    "simplifiapi",
+                    "--accounts",
+                    "--transactions",
+                    "--tags",
+                    "--categories",
+                ],
+            ):
                 main()
             instance.get_accounts.assert_called_once_with("ds1")
             instance.get_transactions.assert_called_once_with("ds1")
@@ -196,4 +222,5 @@ class TestMain:
 class TestMainModule:
     def test_main_module_import(self):
         from simplifiapi.__main__ import main as main_mod_main
+
         assert callable(main_mod_main)

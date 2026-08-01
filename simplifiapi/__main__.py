@@ -1,6 +1,6 @@
-from simplifiapi.cli import main
-
 import logging
+
+from simplifiapi.cli import main
 
 logging.getLogger("simplifiapi").setLevel(logging.INFO)
 
