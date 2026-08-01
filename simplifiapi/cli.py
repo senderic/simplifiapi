@@ -79,6 +79,9 @@ def main():
     if (not token):
         token = client.get_token(
             email=options.email, password=options.password)
+        if not token:
+            logger.error("Unable to retrieve token.")
+            return
 
     if (client.verify_token(token) == False):
         logger.error("Unable to log in simplifi.")
@@ -87,6 +90,9 @@ def main():
     # Retrieve first dataset
     # TODO: Support multiple datasets
     datasets = client.get_datasets()
+    if not datasets:
+        logger.error("No datasets found.")
+        return
     datasetId = datasets[0]["id"]
 
     if (options.accounts):
