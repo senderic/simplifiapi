@@ -1,9 +1,9 @@
+import csv
 import json
 import logging
 import sys
 
 import configargparse
-from pandas import json_normalize
 
 from simplifiapi.client import Client
 
@@ -64,7 +64,22 @@ def write_data(options, data, name):
     filename = "{}_{}.{}".format(options.filename, name, options.format)
     logger.warning("Saving {} to {}".format(name, filename))
     if options.format == CSV_FORMAT:
-        json_normalize(data).to_csv(filename, index=False)
+        if not data:
+            logger.warning("No data to write for {}".format(name))
+            return
+        fieldnames = list(dict.fromkeys(
+            key for row in data if isinstance(row, dict)
+            for key in row
+        ))
+        with open(filename, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+            writer.writeheader()
+            for row in data:
+                if isinstance(row, dict):
+                    flat = {}
+                    for k, v in row.items():
+                        flat[k] = json.dumps(v) if isinstance(v, (dict, list)) else v
+                    writer.writerow(flat)
     elif options.format == JSON_FORMAT:
         with open(filename, "w+") as f:
             json.dump(data, f, indent=2)
