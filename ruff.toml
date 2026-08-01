@@ -1,5 +1,0 @@
-[lint]
-select = ["E", "F", "W", "I", "UP"]
-
-[lint.isort]
-known-first-party = ["simplifiapi"]
