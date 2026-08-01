@@ -1,3 +1,9 @@
+"""Command-line interface for simplifiapi.
+
+Provides argument parsing, data export (JSON/CSV), and the main entry point
+that orchestrates authentication, data retrieval, and file output.
+"""
+
 from __future__ import annotations
 
 import csv
@@ -17,9 +23,17 @@ CSV_FORMAT = "csv"
 
 
 def parse_arguments(args: list[str]) -> configargparse.Namespace:
+    """Parse command-line arguments.
+
+    Args:
+        args: Raw argument list (typically ``sys.argv[1:]``).
+
+    Returns:
+        Parsed namespace with attributes for credentials, data selectors,
+        and output options.
+    """
     parser = configargparse.ArgumentParser()
 
-    # Credential
     parser.add_argument(
         "--email",
         nargs="?",
@@ -39,7 +53,6 @@ def parse_arguments(args: list[str]) -> configargparse.Namespace:
         help="Use existing token to bypass MFA check",
     )
 
-    # Datasets
     parser.add_argument(
         "--accounts", action="store_true", default=False, help="Retrieve accounts"
     )
@@ -53,10 +66,12 @@ def parse_arguments(args: list[str]) -> configargparse.Namespace:
         "--tags", action="store_true", default=False, help="Retrieve tags"
     )
     parser.add_argument(
-        "--categories", action="store_true", default=False, help="Retrieve categories"
+        "--categories",
+        action="store_true",
+        default=False,
+        help="Retrieve categories",
     )
 
-    # Export
     parser.add_argument(
         "--filename", default="output", help="Write results to file this prefix"
     )
@@ -73,6 +88,18 @@ def parse_arguments(args: list[str]) -> configargparse.Namespace:
 def write_data(
     options: configargparse.Namespace, data: list[dict[str, Any]], name: str
 ) -> None:
+    """Write retrieved data to a file.
+
+    Args:
+        options: Parsed CLI options (must have ``filename`` and ``format``).
+        data: List of dicts representing retrieved records.
+        name: Label used in the output filename (e.g. ``"accounts"``).
+
+    Output filename pattern: ``{options.filename}_{name}.{options.format}``.
+
+    CSV output handles nested dicts and lists by serializing them to JSON
+    strings so they fit in a flat columnar format.
+    """
     filename = f"{options.filename}_{name}.{options.format}"
     logger.warning(f"Saving {name} to {filename}")
     if options.format == CSV_FORMAT:
@@ -97,6 +124,15 @@ def write_data(
 
 
 def main() -> None:
+    """Main entry point for the CLI.
+
+    Orchestrates the full pipeline:
+        1. Parse CLI arguments.
+        2. Authenticate (token or email/password + optional MFA).
+        3. Verify the token.
+        4. Fetch the first dataset.
+        5. Retrieve requested data types and write them to disk.
+    """
     options = parse_arguments(sys.argv[1:])
 
     client = Client()
@@ -112,8 +148,6 @@ def main() -> None:
         logger.error("Unable to log in simplifi.")
         return
 
-    # Retrieve first dataset
-    # TODO: Support multiple datasets
     datasets = client.get_datasets()
     if not datasets:
         logger.error("No datasets found.")
