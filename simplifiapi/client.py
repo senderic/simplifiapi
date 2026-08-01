@@ -63,7 +63,7 @@ class Client():
         r.raise_for_status()
         token = r.json().get("accessToken")
 
-        logger.warning("Retrieved token {}".format(token))
+        logger.info("Token retrieved")
 
         return token
 
