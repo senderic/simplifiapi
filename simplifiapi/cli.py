@@ -2,6 +2,7 @@ import csv
 import json
 import logging
 import sys
+from typing import Any, Dict, List, Optional
 
 import configargparse
 
@@ -13,7 +14,7 @@ JSON_FORMAT = "json"
 CSV_FORMAT = "csv"
 
 
-def parse_arguments(args):
+def parse_arguments(args: List[str]) -> configargparse.Namespace:
     parser = configargparse.ArgumentParser()
 
     # Credential
@@ -60,7 +61,7 @@ def parse_arguments(args):
     return parser.parse_args(args)
 
 
-def write_data(options, data, name):
+def write_data(options: configargparse.Namespace, data: List[Dict[str, Any]], name: str) -> None:
     filename = "{}_{}.{}".format(options.filename, name, options.format)
     logger.warning("Saving {} to {}".format(name, filename))
     if options.format == CSV_FORMAT:
@@ -85,12 +86,12 @@ def write_data(options, data, name):
             json.dump(data, f, indent=2)
 
 
-def main():
+def main() -> None:
     options = parse_arguments(sys.argv[1:])
 
     client = Client()
 
-    token = options.token
+    token: Optional[str] = options.token
     if (not token):
         token = client.get_token(
             email=options.email, password=options.password)
