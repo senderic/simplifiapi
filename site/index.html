@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="simplifiapi — an unofficial Python API and CLI for Quicken Simplifi. Export your financial data to JSON or CSV.">
+<title>simplifiapi — Unofficial Quicken Simplifi API</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --orange: #d2991d;
+    --purple: #a371f7;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 80px 0 48px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero .tagline {
+    font-size: 1.25rem;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+
+  .badges {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .badge .dot.green { background: var(--green); }
+  .badge .dot.blue { background: var(--accent); }
+  .badge .dot.orange { background: var(--orange); }
+
+  .cta {
+    margin-top: 32px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: #4090e0;
+    text-decoration: none;
+  }
+
+  .btn-outline {
+    border-color: var(--border);
+    color: var(--text);
+    background: var(--surface);
+  }
+
+  .btn-outline:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* Code demo */
+  .demo {
+    margin: 48px auto 64px;
+    max-width: 750px;
+  }
+
+  .demo .tabs {
+    display: flex;
+    gap: 0;
+  }
+
+  .demo .tab {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: var(--radius) var(--radius) 0 0;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .demo .tab.active {
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  .demo .tab:not(.active) {
+    opacity: 0.6;
+  }
+
+  .demo pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 20px 24px;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", "JetBrains Mono", monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .demo .com { color: var(--muted); }
+  .demo .str { color: var(--green); }
+  .demo .key { color: var(--orange); }
+  .demo .fn  { color: var(--purple); }
+
+  .demo pre code { color: var(--text); }
+
+  /* Features */
+  .section {
+    padding: 64px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .section h2 {
+    font-size: 1.75rem;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
+  .card p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .card .icon {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+  }
+
+  /* Footer */
+  footer {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+
+  footer a { color: var(--muted); }
+
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 2rem; }
+    .hero .tagline { font-size: 1rem; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <h1>simplifiapi</h1>
+    <p class="tagline">Unofficial Python API for Quicken Simplifi — export your finances</p>
+
+    <div class="badges">
+      <span class="badge"><span class="dot green"></span> Python 3.9+</span>
+      <span class="badge"><span class="dot blue"></span> MIT Licensed</span>
+      <span class="badge"><span class="dot orange"></span> 98% Test Coverage</span>
+    </div>
+
+    <div class="cta">
+      <a href="https://github.com/senderic/simplifiapi" class="btn btn-primary">View on GitHub</a>
+      <a href="/simplifiapi/docs/" class="btn btn-outline">Documentation</a>
+    </div>
+  </div>
+</header>
+
+<section class="demo container">
+  <div class="tabs">
+    <div class="tab active">CLI</div>
+    <div class="tab">Python</div>
+  </div>
+  <pre><code><span class="com"># Export transactions as CSV</span>
+$ <span class="fn">simplifiapi</span> --email <span class="str">you@example.com</span> \
+    --transactions --format <span class="key">csv</span>
+
+<span class="com"># Export all data as JSON</span>
+$ <span class="fn">simplifiapi</span> --token <span class="str">abc123</span> \
+    --accounts --transactions --tags --categories</code></pre>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <h2>What you can do</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">&#x1F4B0;</div>
+        <h3>Accounts &amp; Transactions</h3>
+        <p>Fetch all your checking, savings, credit card accounts and their transactions with a single call.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#x1F4CA;</div>
+        <h3>CSV or JSON Export</h3>
+        <p>Output data as flat CSV files for spreadsheets, or full JSON for custom data pipelines.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#x1F512;</div>
+        <h3>MFA Support</h3>
+        <p>Handles multi-factor authentication interactively. Cache your token to skip MFA on subsequent runs.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#x1F4E6;</div>
+        <h3>Lightweight &amp; Zero Bloat</h3>
+        <p>Only two dependencies: <code>requests</code> and <code>configargparse</code>. Installs in seconds.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#x1F500;</div>
+        <h3>Automatic Pagination</h3>
+        <p>Large datasets are automatically paginated — you get the full result, not just the first page.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#x1F9EA;</div>
+        <h3>Type Annotated</h3>
+        <p>Full type hints throughout. Works with mypy, pyright, and your IDE for autocompletion.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="install">
+  <div class="container" style="text-align:center;">
+    <h2>Install in seconds</h2>
+    <pre style="display:inline-block; text-align:left; min-width: 400px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 28px; font-size: 0.95rem;">
+<code><span class="com"># Install</span>
+pip install git+https://github.com/senderic/simplifiapi
+
+<span class="com"># Run it</span>
+<span class="fn">simplifiapi</span> --help</code></pre>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>simplifiapi is an independent project &mdash; not affiliated with Quicken Inc.</p>
+    <p style="margin-top:8px;">
+      <a href="https://github.com/senderic/simplifiapi">GitHub</a> &middot;
+      <a href="/simplifiapi/docs/">Docs</a> &middot;
+      <a href="https://github.com/senderic/simplifiapi/blob/main/LICENSE">MIT License</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
