@@ -36,7 +36,7 @@ class Client():
             mfaCode = input("MFA Code: ")
             body["mfaChannel"] = mfaChannel
             body["mfaCode"] = mfaCode
-            r = requests.post(
+            r = self.session.post(
                 url="https://services.quicken.com/oauth/authorize", json=body)
             r.raise_for_status()
             data = r.json()
