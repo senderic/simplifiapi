@@ -63,7 +63,7 @@ class Client():
         r.raise_for_status()
         token = r.json().get("accessToken")
 
-        logger.warn("Retrieved token {}".format(token))
+        logger.warning("Retrieved token {}".format(token))
 
         return token
 
@@ -81,7 +81,7 @@ class Client():
             return False
         data = r.json()
         userId = data.get("id")
-        logger.warn("User {} logged in.".format(userId))
+        logger.warning("User {} logged in.".format(userId))
 
         # Update session
         self.session.headers.update(headers)
@@ -92,7 +92,7 @@ class Client():
         nextLink = path
         data = []
         while nextLink:
-            logger.warn("Fetching {}".format(nextLink))
+            logger.warning("Fetching {}".format(nextLink))
             r = self.session.get(url=urljoin(
                 SIMPLIFI_ENDPOINT, nextLink), **kargs)
             r.raise_for_status()
