@@ -6,7 +6,7 @@ An unofficial API for Quicken Simplifi
 PyPI is temporarily down. Install with pip from GitHub directly
 
 ```shell
-pip3 install git+https://github.com/rijn/simplifiapi
+pip3 install git+https://github.com/senderic/simplifiapi
 ```
 
 ## CLI
@@ -45,12 +45,17 @@ client = Client()
 
 # Provide either token or email/password
 token = "..."
-token = client.get_token(email=options.email, password=options.password)
+token = client.get_token(email="user@example.com", password="password")
 
-assert client.verify_token(token)
+if not client.verify_token(token):
+    print("Unable to verify token")
+    exit(1)
 
 # Datasets own transactions and accounts
 datasets = client.get_datasets()
+if not datasets:
+    print("No datasets found")
+    exit(1)
 datasetId = datasets[0]["id"]
 
 # Access transactions
