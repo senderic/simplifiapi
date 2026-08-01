@@ -12,11 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.12"
-      - run: uv pip install --system ruff
-      - run: ruff check simplifiapi/ tests/
-      - run: ruff format --check simplifiapi/ tests/
+      - run: uvx ruff check simplifiapi/ tests/
+      - run: uvx ruff format --check simplifiapi/ tests/
 
   test:
     needs: lint
@@ -29,7 +26,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: uv pip install --system ".[dev]"
+      - run: uv pip install --system --break-system-packages ".[dev]"
       - run: pytest --cov=simplifiapi --cov-report=xml --cov-report=term -v
       - uses: codecov/codecov-action@v5
         if: matrix.python-version == '3.12'
