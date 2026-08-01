@@ -1,21 +1,25 @@
-name: Deploy Docs & Site
+name: Deploy site + Sphinx docs to GitHub Pages
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "simplifiapi/**"
-      - "docs/**"
-      - "site/**"
-      - "setup.cfg"
-      - "pyproject.toml"
+    branches: ["main"]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -25,17 +29,14 @@ jobs:
 
       - run: pip install -e ".[docs]"
 
-      - name: Build Sphinx documentation
-        run: sphinx-build -b html docs/ docs/_build/ -W
+      - name: Build Sphinx docs into site/docs/
+        run: sphinx-build -b html docs/ site/docs -W
 
-      - name: Combine docs and brochure site
-        run: |
-          mkdir -p _deploy/docs _deploy/brochure
-          cp -r docs/_build/* _deploy/docs/
-          cp -r site/* _deploy/brochure/
-
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _deploy
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
