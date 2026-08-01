@@ -28,6 +28,7 @@ class Client():
         }
         r = self.session.post(
             url="https://services.quicken.com/oauth/authorize", json=body)
+        r.raise_for_status()
         data = r.json()
         status = data.get("status")
         if (status == "MFA code sent"):
@@ -43,7 +44,10 @@ class Client():
             status = data.get("status")
             if (status != "User passed MFA"):
                 logger.error("Login failed.")
-                logger.error(r.json())
+                try:
+                    logger.error(r.json())
+                except Exception:
+                    logger.error(r.text)
                 return
         code = r.json().get("code")
 
@@ -70,7 +74,10 @@ class Client():
                              headers=headers)
         if (r.status_code != 200):
             logger.error("Error code: {}".format(r.status_code))
-            logger.error(r.json())
+            try:
+                logger.error(r.json())
+            except Exception:
+                logger.error(r.text)
             return False
         data = r.json()
         userId = data.get("id")
@@ -89,8 +96,9 @@ class Client():
             r = self.session.get(url=urljoin(
                 SIMPLIFI_ENDPOINT, nextLink), **kargs)
             r.raise_for_status()
-            data.extend(r.json()["resources"])
-            nextLink = r.json().get("metaData").get("nextLink")
+            resp = r.json()
+            data.extend(resp.get("resources", []))
+            nextLink = resp.get("metaData", {}).get("nextLink")
         return data
 
     def get_datasets(self, limit: int = 1000):
