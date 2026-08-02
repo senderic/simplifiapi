@@ -1,7 +1,8 @@
 """Command-line interface for simplifiapi.
 
-Provides argument parsing, data export (JSON/CSV), and the main entry point
-that orchestrates authentication, data retrieval, and file output.
+Provides argument parsing, data export (JSON/CSV), token management,
+and the main entry point that orchestrates authentication, data retrieval,
+and file output.
 """
 
 from __future__ import annotations
@@ -10,6 +11,7 @@ import csv
 import json
 import logging
 import sys
+from pathlib import Path
 from typing import Any
 
 import configargparse
@@ -20,6 +22,30 @@ logger = logging.getLogger("simplifiapi")
 
 JSON_FORMAT = "json"
 CSV_FORMAT = "csv"
+TOKEN_FILE = Path.home() / ".simplifiapi_token"
+
+
+def _load_saved_token() -> str | None:
+    """Load a previously saved token from disk.
+
+    Returns:
+        The token string if the file exists and is readable, ``None`` otherwise.
+    """
+    try:
+        return TOKEN_FILE.read_text().strip() or None
+    except (OSError, FileNotFoundError):
+        return None
+
+
+def _save_token(token: str) -> None:
+    """Save a token to disk for later reuse.
+
+    Args:
+        token: The access token to persist.
+    """
+    TOKEN_FILE.write_text(token)
+    TOKEN_FILE.chmod(0o600)
+    logger.warning(f"Token saved to {TOKEN_FILE}")
 
 
 def parse_arguments(args: list[str]) -> configargparse.Namespace:
@@ -51,6 +77,12 @@ def parse_arguments(args: list[str]) -> configargparse.Namespace:
         nargs="?",
         default=None,
         help="Use existing token to bypass MFA check",
+    )
+    parser.add_argument(
+        "--save-token",
+        action="store_true",
+        default=None,
+        help="Save the authentication token to ~/.simplifiapi_token for reuse",
     )
 
     parser.add_argument(
@@ -139,10 +171,18 @@ def main() -> None:
 
     token: str | None = options.token
     if not token:
+        token = _load_saved_token()
+    if not token:
         token = client.get_token(email=options.email, password=options.password)
-        if not token:
+        if token:
+            logger.warning(f"Token: {token}")
+            if options.save_token:
+                _save_token(token)
+        else:
             logger.error("Unable to retrieve token.")
             return
+    elif options.save_token:
+        _save_token(token)
 
     if not client.verify_token(token):
         logger.error("Unable to log in simplifi.")
